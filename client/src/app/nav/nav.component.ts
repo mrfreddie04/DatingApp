@@ -31,10 +31,6 @@ export class NavComponent implements OnInit {
       .subscribe(res=>{
         console.log(res);
         this.router.navigateByUrl("/members");
-      },err=>{
-        //"err" is HttpErrorResponse
-        console.log(err);
-        this.toastr.error(err.error);
       });
   };        
 
