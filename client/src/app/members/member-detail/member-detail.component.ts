@@ -30,9 +30,7 @@ export class MemberDetailComponent implements OnInit {
         thumbnailsColumns: 4,
         imageAnimation: NgxGalleryAnimation.Slide,
         preview: false
-     }]; 
-
-     
+     }];      
   }
 
   getImages() : NgxGalleryImage[]{

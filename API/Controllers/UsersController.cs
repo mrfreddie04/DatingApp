@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using API.DTOs;
+using API.Entities;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -39,6 +41,27 @@ namespace API.Controllers
 
       return userDto;
       //return await Task.Factory.StartNew(()=>_context.Users.Find(id));
+    }
+
+    //POST api/users
+    [HttpPut]
+    public async Task<ActionResult> UpdateUser(MemberUpdateDto memberUpdateDto)
+    {
+      //get the user name from the token! 
+      //User is a property of COntrollerBase class
+      var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+      var user = await _repository.GetUserByUserNameAsync(username);
+
+      _mapper.Map(memberUpdateDto,user);
+
+      _repository.Update(user);
+
+      var result = await _repository.SaveAllAsync();
+
+      if(result)
+        return NoContent();
+
+      return BadRequest("Failed to update user");  
     }
 
     // //GET api/users/1
