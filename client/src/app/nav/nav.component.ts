@@ -29,7 +29,7 @@ export class NavComponent implements OnInit {
   login(){
     this.accountService.login(this.model)
       .subscribe(res=>{
-        console.log(res);
+        //console.log(res);
         this.router.navigateByUrl("/members");
       });
   };        

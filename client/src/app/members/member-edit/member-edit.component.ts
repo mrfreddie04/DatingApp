@@ -24,7 +24,8 @@ export class MemberEditComponent implements OnInit {
   member: Member;
   user: User;
   
-  constructor(private accountService: AccountService, private memberService: MembersService, private toastr: ToastrService) { 
+  constructor(private accountService: AccountService, private memberService: MembersService, 
+    private toastr: ToastrService) { 
     this.accountService.currentUser$.pipe(take(1)).subscribe(user=>this.user=user);
   }
 
@@ -41,7 +42,7 @@ export class MemberEditComponent implements OnInit {
     //save member
     this.memberService.updateMember(this.member)
       .subscribe(()=>{
-        this.toastr.success("Profile update successfully");
+        this.toastr.success("Profile updated successfully");
         this.editForm.reset(this.member); //to preserve the values    
       })
   }

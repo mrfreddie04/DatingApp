@@ -20,10 +20,15 @@ namespace API.Extensions
                 options.UseSqlite(config.GetConnectionString("DefaultConnection"));
             });
             
+            //strongly type our config settings (strings=>class)            
+            services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
+
             services.AddScoped<ITokenService, TokenService>();
 
-            services.AddScoped<IUserRepository,UserRepository>();
+            services.AddScoped<IPhotoService,PhotoService>();
 
+            services.AddScoped<IUserRepository,UserRepository>();
+                    
             services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
 
             return services;
