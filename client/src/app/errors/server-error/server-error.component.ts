@@ -10,7 +10,7 @@ export class ServerErrorComponent implements OnInit {
   error: any;
 
   constructor(private router: Router) { 
-    //we can only access router stae inside the ctor
+    //we can only access router state inside the ctor
     const navigation = this.router.getCurrentNavigation();
     // we need to be defenvive, if the user refreshed the page navigation will be null
     this.error = navigation?.extras?.state?.error;
