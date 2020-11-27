@@ -10,6 +10,7 @@ using API.Interfaces;
 using API.Extensions;
 using System.Linq;
 using System;
+using API.Helpers;
 
 namespace API.Controllers
 {
@@ -29,14 +30,21 @@ namespace API.Controllers
 
     //GET api/users
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
+    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery]UserParams userParams )
     {
-      var usersDto = await _repository.GetMembersAsync();
+      var user = await _repository.GetUserByUserNameAsync(User.GetUsername());
+      userParams.CurrentUserName = user.UserName;
+      
+      if(String.IsNullOrEmpty(userParams.Gender))
+        userParams.Gender = user.Gender == "male" ? "female" : "male";
 
-      return Ok(usersDto);
-      //var users = await Task.Factory.StartNew(_context.Users.OrderBy(u=>u.Id).ToList<AppUser>);
+      var users = await _repository.GetMembersAsync(userParams);
+
+      //Controller base class gives us access to the response object
+      Response.AddPaginationHeader(users.CurrentPage,users.PageSize,users.TotalCount,users.TotalPages);
+
+      return Ok(users);      
     }
-
 
     //GET api/users/nola, assign a name to the route
     [HttpGet("{username}", Name = "GetUser")]
@@ -118,7 +126,7 @@ namespace API.Controllers
 
       photo.IsMain = true;
 
-      _repository.Update(user);
+      //_repository.Update(user);
 
       if(await _repository.SaveAllAsync())
         return NoContent();   

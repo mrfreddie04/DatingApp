@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
 import { AccountService } from '../_services/account.service';
+import { MembersService } from '../_services/members.service';
 
 @Component({
   selector: 'app-register',
@@ -19,6 +20,7 @@ export class RegisterComponent implements OnInit {
   validationErrors: string[] = [];
 
   constructor(private service: AccountService, 
+    //private memberService: MembersService,
     private router: Router,
     private toastr: ToastrService,
     private fb: FormBuilder) { }
@@ -54,6 +56,7 @@ export class RegisterComponent implements OnInit {
   register(){
     //console.log(this.registerForm.value);
     this.service.register(this.registerForm.value).subscribe(res=>{
+      //this.memberService.setUser();
       this.router.navigateByUrl("/members");
     },err=>{
       this.validationErrors = err;

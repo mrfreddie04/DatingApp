@@ -17,7 +17,7 @@ import { environment } from 'src/environments/environment';
 export class PhotoEditorComponent implements OnInit {
   @Input() member: Member;
   uploader: FileUploader;
-  hasBaseDropZoneOver: boolean = false;
+  hasBaseDropZoneOver: boolean = false; //indicate if the file is over drop zone
   baseUrl: string = environment.apiUrl;
   user: User;
   
@@ -40,8 +40,8 @@ export class PhotoEditorComponent implements OnInit {
 
   initializeUploader() {
     this.uploader = new FileUploader({
-      url: this.baseUrl+"users/add-photo",
-      authToken: `Bearer ${this.user.token}`,
+      url: this.baseUrl+"users/add-photo", //end point we will send the upload to
+      authToken: `Bearer ${this.user.token}`, //does not go through the interceptor
       isHTML5: true,
       allowedFileType: ["image"],
       removeAfterUpload: true, //remove from the drop zone after upload has taken place
@@ -50,12 +50,15 @@ export class PhotoEditorComponent implements OnInit {
     });
 
     this.uploader.onAfterAddingFile = (file)=>{
-      file.withCredentials = false;
+      //otherwise we will have to make an adjustment to api calls configuration and allow cretentials
+      //to go up with our request
+      file.withCredentials = false; 
     };
 
+    //after successful upload of each file
     this.uploader.onSuccessItem = (item,response,status,headers)=>{
       if(response) {
-        const photo: Photo = JSON.parse(response);
+        const photo: Photo = JSON.parse(response); //photo passedback from API
         this.member.photos.push(photo);
         if(photo.isMain)
         {
@@ -69,15 +72,22 @@ export class PhotoEditorComponent implements OnInit {
 
   setMainPhoto(photo: Photo){
     //save member
+    console.log("Photo",photo)
     this.memberService.setMainPhoto(photo.id)
       .subscribe(()=>{
         this.user.photoUrl = photo.url;
         this.accountService.setCurrentUser(this.user);
         this.member.photoUrl = photo.url;
-        const oldMain = this.member.photos.find(p=>p.isMain);
-        if(oldMain && oldMain != undefined) oldMain.isMain = false;
-        const newMain = this.member.photos.find(p=>p.id == photo.id);
-        if(newMain && newMain != undefined) newMain.isMain = true;
+
+        this.member.photos.forEach(p => {
+          if (p.isMain) p.isMain = false;
+          if (p.id === photo.id) p.isMain = true;
+        })
+
+        // const oldMain = this.member.photos.find(p=>p.isMain);
+        // if(oldMain && oldMain != undefined) oldMain.isMain = false;
+        // const newMain = this.member.photos.find(p=>p.id == photo.id);
+        // if(newMain && newMain != undefined) newMain.isMain = true;
         //this.toastr.success("Main photo updated successfully");
       })
   }  

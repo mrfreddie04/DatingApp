@@ -22,6 +22,11 @@ namespace API.Helpers
 
         CreateMap<RegisterDto,AppUser>();
 
+        // CreateMap<AppUser,LikeDto>()
+        //     .ForMember(dest => dest.PhotoUrl, 
+        //         opt => opt.MapFrom(src=>src.Photos.FirstOrDefault(p=>p.IsMain==true).Url))
+        //     .ForMember(dest => dest.Age,
+        //         opt => opt.MapFrom(src=>src.DateOfBirth.CalculateAge()));
         // CreateMap<MemberDto,AppUser>();
         // CreateMap<PhotoDto,Photo>();
     }

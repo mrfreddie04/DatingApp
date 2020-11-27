@@ -47,6 +47,7 @@ namespace API.Controllers
         {
             Username = user.UserName,
             KnownAs = user.KnownAs,
+            Gender = user.Gender,
             Token = _tokenService.CreateToken(user) //generate jwt token
         });
     }
@@ -69,6 +70,7 @@ namespace API.Controllers
       {
         Username = user.UserName,
         KnownAs = user.KnownAs,
+        Gender = user.Gender,
         PhotoUrl = user.Photos?.FirstOrDefault(photo => photo.IsMain == true)?.Url,
         Token = _tokenService.CreateToken(user) //generate jwt token
       });
