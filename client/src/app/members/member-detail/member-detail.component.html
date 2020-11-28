@@ -1,4 +1,5 @@
-<div class="row" *ngIf="member">
+<div class="row">
+  <!-- <div class="row" *ngIf="member"> -->
   <!-- <app-member-card [member]="member"></app-member-card> -->
   <div class="col-4">
     <div class="card">
@@ -24,32 +25,32 @@
       <div class="card-footer">
         <div class="btn-group d-flex">
           <button class="btn btn-primary">Like</button>
-          <button class="btn btn-success">Message</button>
+          <button class="btn btn-success" (click)="selectTab(3)">Messages</button>
         </div>
       </div>
     </div>
   </div>
   <div class="col-8">
-    <tabset class="member-tabset">
-      <tab heading="About {{member.knownAs}}" id="info">
+    <tabset class="member-tabset" #memberTabs>
+      <tab heading="About {{member.knownAs}}" id="info" (selectTab)="onTabActivated($event)">
         <h4>Description</h4>
         <p>{{member.introduction}}</p>
         <h4>Looking For</h4>
         <p>{{member.lookingFor}}</p>
       </tab>
-      <tab heading="Interests" id="interest">
+      <tab heading="Interests" id="interest" (selectTab)="onTabActivated($event)">
         <h4>Interest</h4>
         <p>{{member.interests}}</p>
       </tab>
-      <tab heading="Photos" id="photos">
+      <tab heading="Photos" id="photos" (selectTab)="onTabActivated($event)">
         <h4>Photos will go here</h4>
         <ngx-gallery [options]="galleryOptions" [images]="galleryImages" 
             class="ngx-gallery" 
             style="display: inline-block; margin-bottom: 20px;">
         </ngx-gallery>
       </tab>      
-      <tab heading="Messages" id="messages">
-        <h4>Messages will go here</h4>      
+      <tab heading="Messages" id="messages" (selectTab)="onTabActivated($event)">
+         <app-member-messages [messages]="messages" [username]="member.username"></app-member-messages>
       </tab>      
     </tabset>
   </div>
