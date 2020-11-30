@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
+using API.Entities;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,7 +31,10 @@ namespace API
                 //will create db if it doesn't exist 
                 //insteade of running "dotnet ef database update" we just need to restart our app 
                 await context.Database.MigrateAsync(); 
-                await Seed.SeedUsers(context);
+
+                var userManager = services.GetRequiredService<UserManager<AppUser>>();
+                var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
+                await Seed.SeedUsers(userManager,roleManager);
             }
             catch(Exception ex)    
             {

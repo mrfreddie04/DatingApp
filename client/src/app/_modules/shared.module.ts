@@ -9,6 +9,7 @@ import { TabsModule } from 'ngx-bootstrap/tabs';
 import { NgxGalleryModule } from '@kolkov/ngx-gallery';
 import { FileUploadModule } from 'ng2-file-upload';
 import { TimeagoModule } from 'ngx-timeago';
+import { ModalModule } from 'ngx-bootstrap/modal';
 
 @NgModule({
   declarations: [],
@@ -22,6 +23,7 @@ import { TimeagoModule } from 'ngx-timeago';
     ButtonsModule.forRoot(),
     TimeagoModule.forRoot(),
     TabsModule.forRoot(),
+    ModalModule.forRoot(),
     ToastrModule.forRoot({
       positionClass: "toast-bottom-right"
     })    
@@ -33,6 +35,7 @@ import { TimeagoModule } from 'ngx-timeago';
     ButtonsModule,
     ToastrModule,
     TabsModule,
+    ModalModule,
     TimeagoModule,
     NgxGalleryModule,
     FileUploadModule

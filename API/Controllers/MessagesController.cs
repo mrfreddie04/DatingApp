@@ -87,7 +87,7 @@ namespace API.Controllers
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MessageDto>>> GetUserLikes([FromQuery]MessageParams messageParams)
+    public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessagesForUser([FromQuery]MessageParams messageParams)
     {
         messageParams.Username = User.GetUsername();    
 

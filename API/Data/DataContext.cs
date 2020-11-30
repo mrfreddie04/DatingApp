@@ -1,15 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using API.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace API.Data
 {
-  public class DataContext : DbContext
+  public class DataContext : IdentityDbContext<AppUser, AppRole, int, IdentityUserClaim<int>, 
+    AppUserRole, IdentityUserLogin<int>, IdentityRoleClaim<int>, IdentityUserToken<int>>
   {
     public DataContext(DbContextOptions options) : base(options)
     {
     }
 
-    public DbSet<AppUser> Users { get; set; }
     public DbSet<UserLike> Likes { get; set; }
     //public DbSet<Photo> Photos { get; set; }
     public DbSet<Message> Messages { get; set; }
@@ -17,6 +19,19 @@ namespace API.Data
     protected override void OnModelCreating(ModelBuilder builder)
     {
       base.OnModelCreating(builder);
+
+      //configure identity tables
+      builder.Entity<AppUser>()
+        .HasMany(u=>u.UserRoles)
+        .WithOne(ur=>ur.User)
+        .HasForeignKey(ur=>ur.UserId)
+        .IsRequired();
+    
+      builder.Entity<AppRole>()
+        .HasMany(r=>r.UserRoles)
+        .WithOne(ur=>ur.Role)
+        .HasForeignKey(ur=>ur.RoleId)
+        .IsRequired();      
 
       //builder.ApplyConfiguration<AppUser>(pass configuration class);
       //or configure everything inline

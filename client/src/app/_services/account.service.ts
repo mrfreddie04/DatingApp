@@ -30,7 +30,7 @@ export class AccountService {
   login(model:any){
     return this.http.post(this.baseUrl+"account/login",model)
       .pipe(map((response:User)=>{
-          const user = response;
+          const user = response;          
           if(user){
             this.setCurrentUser(user);
           }                    
@@ -43,7 +43,20 @@ export class AccountService {
   }
 
   setCurrentUser(user: User){
-      localStorage.setItem("user", JSON.stringify(user)); 
-      this.currentUserSource.next(user); //store the next value to the ReplayObject
+    user.roles = [];
+
+    //roles could be a simple string or an array of strings
+    const roles = this.getDecodedToken(user.token).role;
+    Array.isArray(roles) ? user.roles = roles : user.roles.push(roles);
+
+    localStorage.setItem("user", JSON.stringify(user)); 
+    this.currentUserSource.next(user); //store the next value to the ReplayObject
+  }
+
+  getDecodedToken(token: string) {
+      //token - header.payload.signature
+      //we extract the middle part (payload)
+      const payload = token.split(".")[1];
+      return JSON.parse(atob(payload)) ;
   }
 }
