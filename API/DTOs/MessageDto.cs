@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace API.DTOs
 {
@@ -18,5 +19,10 @@ namespace API.DTOs
         public string Content { get; set; }
         public DateTime? DateRead { get; set; }
         public DateTime DateSent { get; set; } 
+
+        [JsonIgnore] //suppress sending back of this propertiy to the client
+        public bool SenderDeleted { get; set; }
+        [JsonIgnore]
+        public bool RecipientDeleted { get; set; }
     }
 }

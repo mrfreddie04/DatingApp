@@ -94,24 +94,18 @@ namespace API.Data
         return await PagedList<MemberDto>.CreateAsync(queryDto,userParams.PageNumber,userParams.PageSize);
     }
 
-
-    public async Task<bool> SaveAllAsync()
-    {
-      // if(_context.ChangeTracker.HasChanges())
-      // {
-      //     await _context.SaveChangesAsync();
-      //     return true;
-      // }
-      // return false;
-
-      return (await _context.SaveChangesAsync()) > 0;
-    }
-
     public void Update(AppUser user)
     {
       //mark entity as modified
       _context.Entry<AppUser>(user).State = EntityState.Modified;
     }
 
+    public async Task<string> GetUserGenderAsync(string username)
+    {
+      return await _context.Users
+                    .Where(u=>u.UserName==username)
+                    .Select(u=>u.Gender)
+                    .FirstOrDefaultAsync();
+    }
   }
 }

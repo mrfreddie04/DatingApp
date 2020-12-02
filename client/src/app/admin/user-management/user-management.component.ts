@@ -31,13 +31,14 @@ export class UserManagementComponent implements OnInit {
     const config = {
       class: "modal-dialog-centered",
       initialState: {
-        user:user,
+        user: user,
         roles: this.getRolesArray(user)
       }
     };
 
     this.bsModalRef = this.modalService.show(RolesModalComponent, config);
     
+    //subscrice to content change, updateSelectableReoles property in the modal component class
     this.bsModalRef.content.updateSelectedRoles.subscribe(values => {  
       const roles = values.filter(r=>r.checked).map(r=>r.name);    
       this.adminService.updateUserRoles(user.username, roles)
