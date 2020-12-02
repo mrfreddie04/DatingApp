@@ -1,4 +1,6 @@
+using System;
 using System.Text;
+using System.Threading.Tasks;
 using API.Data;
 using API.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -26,12 +28,32 @@ namespace API.Extensions
 
             //add authentication
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options => {
-                    options.TokenValidationParameters = new TokenValidationParameters(){
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"])),
-                    ValidateIssuer = false, //API Serve
-                    ValidateAudience = false //Angular App
+                .AddJwtBearer(options => 
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"])),
+                        ValidateIssuer = false, //API Serve
+                        ValidateAudience = false //Angular App
+                    };
+
+                    options.Events = new JwtBearerEvents()
+                    {
+                        OnMessageReceived = context => 
+                        {
+                            //SignalR by default will send up a token with the key of access_token
+                            var accessToken = context.Request.Query["access_token"];
+                            //Check the path of this request
+                            var path = context.HttpContext.Request.Path;
+
+                            if(!String.IsNullOrEmpty(accessToken) || path.StartsWithSegments("/hubs"))
+                            {
+                                context.Token = accessToken;    
+                            }
+
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 

@@ -7,6 +7,7 @@ using API.Data;
 using API.Helpers;
 using API.Interfaces;
 using API.Services;
+using API.SignalR;
 
 namespace API.Extensions
 {
@@ -35,6 +36,8 @@ namespace API.Extensions
             services.AddScoped<IMessageRepository,MessageRepository>();
 
             services.AddScoped<LogUserActivity>();
+
+            services.AddSingleton<PresenceTracker>(); //single instance per the etire server
                     
             services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
 
