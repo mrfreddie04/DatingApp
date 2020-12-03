@@ -51,9 +51,11 @@ namespace API.Controllers
     [HttpGet("{username}", Name = "GetUser")]
     public async Task<ActionResult<MemberDto>> GetUser(string username)
     {
-      var userDto = await _unitOfWork.UserRepository.GetMemberAsync(username);
+      var currentUsername = User.GetUsername();
+      bool isCurrentUser = (username == currentUsername); 
+      var userDto = await _unitOfWork.UserRepository.GetMemberAsync(username, isCurrentUser);
 
-      return userDto;
+      return Ok(userDto);
       //return await Task.Factory.StartNew(()=>_context.Users.Find(id));
     }
 
@@ -94,7 +96,8 @@ namespace API.Controllers
 
       if(user.Photos.Count==0)
       {
-        photo.IsMain = true;
+        //newly added first photo are not automatically tagged main
+        photo.IsMain = false;
       }
 
       user.Photos.Add(photo);
@@ -107,7 +110,7 @@ namespace API.Controllers
         return CreatedAtRoute("GetUser",new {username=user.UserName},_mapper.Map<PhotoDto>(photo));  
       } 
       
-      return BadRequest("Failed adding photo");  
+      return BadRequest("Failed to add photo");  
     }
 
     [HttpPut("set-main-photo/{photoId}")]

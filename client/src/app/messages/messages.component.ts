@@ -40,7 +40,7 @@ export class MessagesComponent implements OnInit {
 
   deleteMessage(id: number)
   {
-    this.confirmService.confirm("Confirmd delete message", "This cannot be undone")
+    this.confirmService.confirm("Confirm delete message", "This cannot be undone")
       .subscribe(result=>{
         if(result)
         {

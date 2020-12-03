@@ -17,7 +17,7 @@ export class MemberDetailedResolver implements Resolve<Member>
     //super();    
   }
 
-  //you can use it to get your data before contructing a http template
+  //you can use it to get your data before constructing a http template
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Member> {
     return this.memberService.getMember(route.paramMap.get("username"));
   }

@@ -29,6 +29,10 @@ namespace API.Helpers
           .ForMember( dest => dest.SenderPhotoUrl,
             opt => opt.MapFrom(src=>src.Sender.Photos.FirstOrDefault(p=>p.IsMain==true).Url));
 
+        CreateMap<Photo,PhotoForApprovalDto>()
+          .ForMember(dest => dest.Username,
+                opt => opt.MapFrom(src=>src.AppUser.UserName));
+
         //done in DataContext.OnModelCreating() method
         //CreateMap<DateTime,DateTime>().ConvertUsing(d => (DateTime)DateTime.SpecifyKind(d, DateTimeKind.Utc));  
 

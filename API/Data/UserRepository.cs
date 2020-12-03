@@ -37,14 +37,22 @@ namespace API.Data
           .SingleOrDefaultAsync(u => u.UserName == username);
     }
 
-    public async Task<MemberDto> GetMemberAsync(string username)
+    public async Task<MemberDto> GetMemberAsync(string username, bool isCurrentUser)
     {
-        //ConfigurationProvider - configurations defined in AutoMapperProfiles
-      return await _context.Users
-          .Where(u => u.UserName == username)
-          //.Include(u => u.Photos)
-          .ProjectTo<MemberDto>(_mapper.ConfigurationProvider) //projects the qury results to the mapped object
-          .SingleOrDefaultAsync();
+      var query = _context.Users
+          .Where(x => x.UserName == username)
+          .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
+          .AsQueryable();
+
+      if (isCurrentUser) query = query.IgnoreQueryFilters();
+
+      return await query.FirstOrDefaultAsync();      
+      //ConfigurationProvider - configurations defined in AutoMapperProfiles
+      // return await _context.Users
+      //     .Where(u => u.UserName == username)
+      //     //.Include(u => u.Photos)
+      //     .ProjectTo<MemberDto>(_mapper.ConfigurationProvider) //projects the query results to the mapped object
+      //     .SingleOrDefaultAsync();
 
       // return await _context.Users
       //     .Where(u=>u.UserName==username)
@@ -105,6 +113,15 @@ namespace API.Data
       return await _context.Users
                     .Where(u=>u.UserName==username)
                     .Select(u=>u.Gender)
+                    .FirstOrDefaultAsync();
+    }
+
+    public async Task<AppUser> GetUserByPhotoIdAsync(int photoId)
+    {
+      return await _context.Users
+                    .Include(u=>u.Photos)
+                    .IgnoreQueryFilters()
+                    .Where(u=>u.Photos.Any(p=>p.Id == photoId))
                     .FirstOrDefaultAsync();
     }
   }

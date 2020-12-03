@@ -39,6 +39,8 @@ namespace API.Data
                 //using var hmac= new HMACSHA512(); //will dispose when var goes our os scope
 
                 user.UserName = user.UserName.ToLower();
+                foreach(var photo in user.Photos)
+                    photo.isApproved = true;
                 //user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes("Pa$$w0rd"));
                 //user.PasswordSalt = hmac.Key; //it is randomly generated when hmac calss is instantiated
 
