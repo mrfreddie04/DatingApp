@@ -75,12 +75,17 @@ namespace API
 
       app.UseAuthorization();
 
+      //for prod deployment - tell API server to use static files
+      app.UseDefaultFiles(); //to serve index.html, if it is inside there
+      app.UseStaticFiles();
+
       //routing
       app.UseEndpoints(endpoints =>
       {
         endpoints.MapControllers();
         endpoints.MapHub<PresenceHub>("hubs/presence"); //add SignalR to routing
         endpoints.MapHub<MessageHub>("hubs/message"); //add SignalR to routing
+        endpoints.MapFallbackToController("Index","Fallback");
       });
     }
   }
