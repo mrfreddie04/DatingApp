@@ -29,7 +29,7 @@ namespace API
                 var context = services.GetRequiredService<DataContext>();      
                 //applies pending migrations for the context to the db
                 //will create db if it doesn't exist 
-                //insteade of running "dotnet ef database update" we just need to restart our app 
+                //instead of running "dotnet ef database update" we just need to restart our app 
                 await context.Database.MigrateAsync(); 
 
                 var userManager = services.GetRequiredService<UserManager<AppUser>>();
