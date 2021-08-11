@@ -1,0 +1,2 @@
+### Get Weather
+GET https://localhost:5001/WeatherForecast
