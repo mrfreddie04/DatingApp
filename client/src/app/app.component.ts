@@ -1,7 +1,8 @@
+import { AccountService } from './_services/account.service';
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { User } from './_models/user';
 
-interface User {
+interface UserFull {
   id: number;
   userName: string;
 }
@@ -13,24 +14,19 @@ interface User {
 })
 export class AppComponent implements OnInit{
   title = 'The Dating App';
-  users: User[] = [];
+  users: UserFull[] = [];
 
-  constructor(private http: HttpClient){}
+  constructor(
+    private accountService: AccountService
+  ){}
 
   ngOnInit(): void {
-    this.getUsers();
+    this.setCurrentUser();
   }
 
-  getUsers() {
-    this.http.get<User[]>("https://localhost:5001/api/users")
-    .subscribe(
-      (response)=>{
-        this.users = response;
-      },
-      (err) => {
-        console.log("Error", err);
-      }
-    );     
+  setCurrentUser(){
+    const user: User = JSON.parse(localStorage.getItem("user"));
+    this.accountService.setCurrentUser(user);
   }
 
 }
