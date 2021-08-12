@@ -1,0 +1,12 @@
+<div class="container">
+  <h1>Not Found</h1>
+
+  <div *ngIf="currentUser$ | async then membersPage else homePage"></div>
+  <ng-template #membersPage>
+    <button class="btn btn-info btn-lg" routerLink="/members">Return to home page</button>
+  </ng-template>
+  <ng-template #homePage>
+    <button class="btn btn-info btn-lg" routerLink="/">Return to home page</button>
+  </ng-template>  
+  
+</div>

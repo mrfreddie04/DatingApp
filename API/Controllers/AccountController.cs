@@ -73,12 +73,10 @@ namespace API.Controllers
             if(passwordHash[i] != user.PasswordHash[i])
               return Unauthorized("Invalid password"); 
         }
-
-        var token = _tokenService.CreateToken(user);
         
         return new UserDto(){
           Username = user.UserName,
-          Token = token
+          Token = _tokenService.CreateToken(user)
         };
     }
 

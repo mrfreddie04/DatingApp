@@ -14,12 +14,12 @@ namespace API.Extensions
         ){
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer( options => {
-                options.TokenValidationParameters = new TokenValidationParameters(){
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"])) ,
-                    ValidateIssuer = false, //API Server
-                    ValidateAudience = false //Angular App
-                };
+                    options.TokenValidationParameters = new TokenValidationParameters(){
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"])) ,
+                        ValidateIssuer = false, //API Server
+                        ValidateAudience = false //Angular App
+                    };
                 });
 
             return services;
