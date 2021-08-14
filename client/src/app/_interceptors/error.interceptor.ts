@@ -59,6 +59,7 @@ export class ErrorInterceptor implements HttpInterceptor {
               break;
           }
         }
+        //console.log("Rethrowing the error");
         return throwError(err);
       })
     )
