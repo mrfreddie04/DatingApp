@@ -6,10 +6,12 @@ using API.Entities;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
-using API.Interfaces;
-using API.DTOs;
 using AutoMapper;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using API.Interfaces;
+using API.Extensions;
+using API.DTOs;
 
 namespace API.Controllers
 {
@@ -18,11 +20,13 @@ namespace API.Controllers
   {
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
+    private readonly IPhotoService _photoService;
 
-    public UsersController(IUserRepository userRepository, IMapper mapper)
+    public UsersController(IUserRepository userRepository, IMapper mapper, IPhotoService photoService)
     {
       _userRepository = userRepository;
       _mapper = mapper;
+      _photoService = photoService;
     }
 
     [HttpGet]
@@ -32,7 +36,7 @@ namespace API.Controllers
         return Ok(users); 
     }
 
-    [HttpGet("{username}")]
+    [HttpGet("{username}", Name = "GetUser")]
     public async Task<ActionResult<MemberDto>> GetUser(string username) {
         // var user = await _userRepository.GetUserByUserNameAsync(username);
         // var userToReturn = _mapper.Map<MemberDto>(user);
@@ -50,15 +54,13 @@ namespace API.Controllers
     [HttpPut]
     public async Task<ActionResult> UpdateUser(MemberUpdateDto memberUpdateDto) {
         //get username from the token (User claim principal is available inthe parent class - ControllerBase)
-        var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
         //get user entity from the DB
-        var user = await _userRepository.GetUserByUserNameAsync(username);
+        var user = await _userRepository.GetUserByUserNameAsync(User.GetUserName());
 
         //use mapper to update the user
         _mapper.Map(memberUpdateDto, user);
 
-        //add tracking info to the db context - chnage status of the user object to EntityState.Modified
+        //add tracking info to the db context - change status of the user object to EntityState.Modified
         _userRepository.Update(user);
 
         //save changes to the db
@@ -68,5 +70,98 @@ namespace API.Controllers
         return BadRequest("Failed to update user");
     }
 
+    [HttpPost("add-photo")]
+    public async Task<ActionResult<PhotoDto>> AddPhoto(IFormFile file) {
+      //get user - we are eagerly loading photos
+      var user = await _userRepository.GetUserByUserNameAsync(User.GetUserName());
+
+      //upload to cloudinary
+      var results = await _photoService.AddPhotoAsync(file);
+
+      if(results.Error != null)
+        return BadRequest(results.Error.Message);
+
+      //create Photo
+      var photo = new Photo() {
+        Url = results.SecureUrl.AbsoluteUri,
+        PublicId = results.PublicId,        
+        IsMain = false
+      };
+
+      if(user.Photos.Count == 0) {
+        photo.IsMain = true;
+      }
+
+      //add Photo to the Photos collection
+      user.Photos.Add(photo);
+
+      //update user record
+      _userRepository.Update(user);
+
+        //save changes to the db
+      if(await _userRepository.SaveAllAsync()) {
+        return CreatedAtRoute("GetUser",new {username=user.UserName},_mapper.Map<PhotoDto>(photo)); 
+        //return _mapper.Map<PhotoDto>(photo);    
+      }
+          
+      return BadRequest("Problem add photo");
+    }
+
+    [HttpPut("set-main-photo/{photoId}")]
+    public async Task<ActionResult> SetMainPhoto(int photoId) {
+      var user = await _userRepository.GetUserByUserNameAsync(User.GetUserName());
+
+      var photo = user.Photos.FirstOrDefault((photo)=>photo.Id == photoId);
+      if(photo == null) 
+        return BadRequest("Failed to update photo");
+      if(photo.IsMain) 
+        return BadRequest("This is already your main photo");        
+
+      var currentMainPhoto = user.Photos.FirstOrDefault((photo)=>photo.IsMain);
+      if(currentMainPhoto != null) 
+        currentMainPhoto.IsMain = false;
+
+      photo.IsMain = true;  
+
+      //update user record
+      _userRepository.Update(user);
+
+        //save changes to the db
+      if(await _userRepository.SaveAllAsync()) {
+        return NoContent();
+      }      
+
+     return BadRequest("Failed to set main photo");
+    }
+
+    [HttpDelete("delete-photo/{photoId}")]
+    public async Task<ActionResult> DeletePhoto(int photoId) {
+      var user = await _userRepository.GetUserByUserNameAsync(User.GetUserName());
+
+      var photo = user.Photos.FirstOrDefault((photo)=>photo.Id == photoId);
+
+      if(photo == null) 
+        return BadRequest("Failed to delete photo");
+      
+      if(photo.IsMain) 
+        return BadRequest("You cannot delete your main photo");
+      
+      if(photo.PublicId != null) {
+        var results = await _photoService.DeletePhotoAsync(photo.PublicId);        
+        if(results.Error != null)
+          return BadRequest(results.Error.Message);        
+      }        
+
+      user.Photos.Remove(photo);
+
+      _userRepository.Update(user);
+
+        //save changes to the db
+      if(await _userRepository.SaveAllAsync()) {
+        return Ok();
+      }       
+
+      return BadRequest("Failed to delete photo");
+    }
   }
-}
+}  

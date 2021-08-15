@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Member } from '../_models/member';
 import { of } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { switchMap, tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -43,6 +43,19 @@ export class MembersService {
           this.members[index] = member;
       })
     );
+  }
+
+  public setMainPhoto(photoId: number) {
+    return this.http.put(`${this.baseUrl}users/set-main-photo/${photoId}`, {});
+        // .pipe(
+        // switchMap(() => {}),
+        // tap(() => {
+        //   this.
+        // })
+  }  
+
+  public deletePhoto(photoId: number) {
+    return this.http.delete(`${this.baseUrl}users/delete-photo/${photoId}`, {});
   }
 
   // private getHttpOptions() {
