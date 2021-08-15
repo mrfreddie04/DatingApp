@@ -1,3 +1,4 @@
+import { Photo } from './../../_models/photo';
 import { MembersService } from './../../_services/members.service';
 import { AccountService } from 'src/app/_services/account.service';
 import { environment } from './../../../environments/environment';
@@ -6,7 +7,7 @@ import { FileSelectDirective, FileDropDirective, FileUploader, FileItem } from '
 import { Member } from 'src/app/_models/member';
 import { User } from 'src/app/_models/user';
 import { take } from 'rxjs/operators';
-import { Photo } from 'src/app/_models/photo';
+
 
 @Component({
   selector: 'app-photo-editor',
@@ -49,8 +50,11 @@ export class PhotoEditorComponent implements OnInit {
 
     this.uploader.onSuccessItem = (fileItem, response, status, headers) => {
       if(response) {
-        const photo = JSON.parse(response);
+        const photo: Photo = JSON.parse(response);
         this.member.photos.push(photo);
+        if(photo.isMain) {
+          this.updatePhoto(photo);
+        }
       }
     };
   }
@@ -62,16 +66,7 @@ export class PhotoEditorComponent implements OnInit {
   public setMainPhoto(photo: Photo) {
     this.membersService.setMainPhoto(photo.id)
       .subscribe(() => {
-        this.user.photoUrl = photo.url;
-        this.accountService.setCurrentUser(this.user);
-        this.member.photoUrl = photo.url;
-        this.member.photos.forEach( p => {
-          if(p.id === photo.id) { 
-            p.isMain = true; 
-          } else {
-            p.isMain = false; 
-          }
-        });
+        this.updatePhoto(photo);
       });
   }
  
@@ -81,5 +76,18 @@ export class PhotoEditorComponent implements OnInit {
         this.member.photos = this.member.photos.filter(p => p.id !== photo.id);
       }
     )
+  }
+
+  private updatePhoto(photo: Photo) {
+    this.user.photoUrl = photo.url;
+    this.accountService.setCurrentUser(this.user);
+    this.member.photoUrl = photo.url;
+    this.member.photos.forEach( p => {
+      if(p.id === photo.id) { 
+        p.isMain = true; 
+      } else {
+        p.isMain = false; 
+      }
+    });
   }
 }
