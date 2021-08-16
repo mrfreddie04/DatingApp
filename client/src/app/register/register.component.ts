@@ -1,8 +1,9 @@
+import { MembersService } from './../_services/members.service';
 import { Router } from '@angular/router';
 import { AccountService } from './../_services/account.service';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { ToastrService } from 'ngx-toastr';
 import { FormGroup, FormControl, Validators, AbstractControl, ValidatorFn, ValidationErrors, FormBuilder } from '@angular/forms';
+import { User } from '../_models/user';
 
 @Component({
   selector: 'app-register',
@@ -17,7 +18,7 @@ export class RegisterComponent implements OnInit {
 
   constructor(
     private accountService: AccountService,
-    private toastr: ToastrService,
+    private memberService: MembersService,
     private fb: FormBuilder,
     private router: Router
   ) { }
@@ -75,8 +76,9 @@ export class RegisterComponent implements OnInit {
   register() {
     if(this.registerForm.valid) {
       this.accountService.register(this.registerForm.value).subscribe(
-        (response)=>{
-          console.log(response);
+        (user: User)=>{
+          console.log(user);
+          this.memberService.resetUserParamsLogin(user);
           this.router.navigateByUrl("/members");
         },
         (err) => {

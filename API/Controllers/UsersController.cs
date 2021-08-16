@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using API.Interfaces;
 using API.Extensions;
 using API.DTOs;
+using API.Helpers;
 
 namespace API.Controllers
 {
@@ -30,10 +31,23 @@ namespace API.Controllers
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers() {
-        var users = await _userRepository.GetMembersAsync();     
-        //var usersToReturn = _mapper.Map<IEnumerable<MemberDto>>(users);
+    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery] UserParams userParams) {
+        
+        var user = await _userRepository.GetUserByUserNameAsync(User.GetUserName());
+        userParams.CurrentUserName = user.UserName;
+
+        if(string.IsNullOrEmpty(userParams.Gender))
+          userParams.Gender = user.Gender == "male" ? "female" : "male";
+
+        // get PagedList<MemberDto>
+        var users = await _userRepository.GetMembersAsync(userParams);   
+
+        // retrieve paging inro from PagedList and use it to add Pagination Header
+        Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
+
         return Ok(users); 
+
+        //var usersToReturn = _mapper.Map<IEnumerable<MemberDto>>(users);
     }
 
     [HttpGet("{username}", Name = "GetUser")]
@@ -53,7 +67,7 @@ namespace API.Controllers
 
     [HttpPut]
     public async Task<ActionResult> UpdateUser(MemberUpdateDto memberUpdateDto) {
-        //get username from the token (User claim principal is available inthe parent class - ControllerBase)
+        //get username from the token (User claim principal is available in the parent class - ControllerBase)
         //get user entity from the DB
         var user = await _userRepository.GetUserByUserNameAsync(User.GetUserName());
 

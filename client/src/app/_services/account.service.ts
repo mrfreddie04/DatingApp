@@ -13,7 +13,9 @@ export class AccountService {
   private currentUserSource = new ReplaySubject<User>(1);
   public currentUser$  = this.currentUserSource.asObservable();
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient
+  ) { }
 
   public login(model: any) {
     return this.http.post( `${environment.apiUrl}account/login`, model).pipe(
@@ -23,6 +25,7 @@ export class AccountService {
         if(user) {
           this.setCurrentUser(user);
         }
+        return response;
       })
     )
   }
@@ -34,6 +37,7 @@ export class AccountService {
         if(user) {
           this.setCurrentUser(user);
         }
+        return response;
       })
     )
   }  
