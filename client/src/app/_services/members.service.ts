@@ -8,6 +8,7 @@ import { of } from 'rxjs';
 import { map, switchMap, take, tap } from 'rxjs/operators';
 import { UserParams } from '../_models/userParams';
 import { User } from '../_models/user';
+import { Like } from '../_models/like';
 
 @Injectable({
   providedIn: 'root'
@@ -31,26 +32,6 @@ export class MembersService {
       }
     }); 
   }
-
-  public getUserParams(): UserParams {
-    return this.userParams;
-  }
-
-  public setUserParams(params: UserParams): void {
-    this.userParams = params;
-    //console.log("UP Set", this.userParams);
-  }
-
-  public resetUserParams(): UserParams {
-    this.userParams = new UserParams(this.user);
-    return this.userParams;
-  }  
-
-  public resetUserParamsLogin(user: User): void {
-    this.user = user;
-    this.userParams = new UserParams(user);
-    //console.log("UP Login", this.userParams);
-  }    
 
   public getMembers(userParams: UserParams) {
     //console.log(Object.values(userParams).join("-"));
@@ -108,6 +89,41 @@ export class MembersService {
   public deletePhoto(photoId: number) {
     return this.http.delete(`${this.baseUrl}users/delete-photo/${photoId}`, {});
   }
+
+  public addLike(username: string) {
+    return this.http.post(`${this.baseUrl}likes/${username}`, {});
+  }
+
+  public getLikes(predicate: string, pageNumber: number, pageSize: number) {
+    // let params = new HttpParams();
+    // params = params.append("predicate", predicate);
+    // return this.http.get(`${this.baseUrl}likes`, {params: params});
+    //return this.http.get<Like[]>(`${this.baseUrl}likes?predicate=${predicate}`);
+    let params = this.getPaginationHeaders(pageNumber, pageSize);
+    params = params.append("predicate", predicate);    
+
+    return this.getPaginatedResults<Like[]>(`${this.baseUrl}likes`,params);    
+  }
+
+  public getUserParams(): UserParams {
+    return this.userParams;
+  }
+
+  public setUserParams(params: UserParams): void {
+    this.userParams = params;
+    //console.log("UP Set", this.userParams);
+  }
+
+  public resetUserParams(): UserParams {
+    this.userParams = new UserParams(this.user);
+    return this.userParams;
+  }  
+
+  public resetUserParamsLogin(user: User): void {
+    this.user = user;
+    this.userParams = new UserParams(user);
+    //console.log("UP Login", this.userParams);
+  }    
 
   private getPaginatedResults<T>(url: string, params: HttpParams) {
     const paginatedResult: PaginatedResult<T> = new PaginatedResult<T>();
