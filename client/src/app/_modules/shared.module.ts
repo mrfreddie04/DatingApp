@@ -4,6 +4,7 @@ import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 import { BsDatepickerModule } from "ngx-bootstrap/datepicker";
 import { ButtonsModule } from 'ngx-bootstrap/buttons';
+import { ModalModule } from 'ngx-bootstrap/modal';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { ToastrModule } from 'ngx-toastr';
 import { NgxGalleryModule } from '@kolkov/ngx-gallery';
@@ -22,6 +23,7 @@ import { TimeagoModule } from 'ngx-timeago';
     ButtonsModule.forRoot(),
     TimeagoModule.forRoot(),
     TabsModule.forRoot(),
+    ModalModule.forRoot(),
     ToastrModule.forRoot({
       positionClass: "toast-bottom-right"
     })     
@@ -30,6 +32,7 @@ import { TimeagoModule } from 'ngx-timeago';
     BsDropdownModule,
     ToastrModule,
     TabsModule,
+    ModalModule,
     NgxGalleryModule,
     FileUploadModule,
     BsDatepickerModule,

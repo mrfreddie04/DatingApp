@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
+using API.Entities;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,11 +27,13 @@ namespace API
             {
                 //get DB context instance from DI container
                 var context = services.GetRequiredService<DataContext>();
+                var userManager = services.GetRequiredService<UserManager<AppUser>>();
+                var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
                 //apply all pending migrations - instead of >dotnet ef database update command
                 //will also recreate dropped db
                 await context.Database.MigrateAsync();
-                //see data    
-                await Seed.SeedUsers(context);
+                //seed data    
+                await Seed.SeedUsers(userManager, roleManager);
             }
             catch(Exception ex)
             {

@@ -48,7 +48,23 @@ export class AccountService {
   }
 
   public setCurrentUser(user: User): void {
+    //extract roles from the token
+    user.roles = [];
+    const roles = this.getDecodedTokenPayload(user.token).role;
+    if(roles) {
+      if(typeof roles === "string")
+        user.roles.push(roles);
+      else if(Array.isArray(roles))  
+        user.roles = roles;
+    }
+
     localStorage.setItem("user", JSON.stringify(user));    
     this.currentUserSource.next(user);
+  }
+
+  public getDecodedTokenPayload(token: string) {
+    const payload_encoded = token.split(".")[1]; //second section in the token
+    const payload = atob(payload_encoded); //decodes a string of data which has been encoded using Base64 encoding
+    return JSON.parse(payload); //parse payload into an object
   }
 }
