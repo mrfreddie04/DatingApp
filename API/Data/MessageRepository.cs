@@ -21,7 +21,37 @@ namespace API.Data
     {
       _context = context;
       _mapper = mapper;
-    }  
+    }
+
+    public void AddGroup(Group group)
+    {
+      _context.Groups.Add(group);
+    }
+
+    public void RemoveConnection(Connection connection)
+    {
+      _context.Connections.Remove(connection);
+    }    
+
+    public async Task<Connection> GetConnectionAsync(string connectionId)
+    {
+      return await _context.Connections.FindAsync(connectionId);
+    }
+
+    public async Task<Group> GetMessageGroupAsync(string groupName)
+    {
+      return await _context.Groups
+        .Include(g => g.Connections)
+        .SingleOrDefaultAsync( g => g.Name == groupName);
+    }    
+
+    public async Task<Group> GetGroupForConnectionAsync(string connectionId){
+      return await _context.Groups
+        .Include(g => g.Connections)
+        .Where( g => g.Connections.Any( c => c.ConnectionId == connectionId))
+        .FirstOrDefaultAsync();
+    }
+
     public void AddMessage(Message message)
     {
       _context.Messages.Add(message);
@@ -31,6 +61,7 @@ namespace API.Data
     {
       _context.Messages.Remove(message);
     }
+
 
     public async Task<Message> GetMessageAsync(int id)
     {
@@ -73,7 +104,7 @@ namespace API.Data
             .Where( m => 
                 m.Sender.UserName == currentUserName && !m.SenderDeleted && m.Recipient.UserName == recipientName ||
                 m.Sender.UserName == recipientName && !m.RecipientDeleted && m.Recipient.UserName == currentUserName)
-            .OrderByDescending( m => m.DateSent)    
+            .OrderBy( m => m.DateSent)    
             .ToListAsync();
 
         var unreadMessages = messages
@@ -85,7 +116,7 @@ namespace API.Data
         {
             foreach(var message in unreadMessages) 
             {
-                message.DateRead = DateTime.Now; 
+                message.DateRead = DateTime.UtcNow; 
             }
 
             await _context.SaveChangesAsync();

@@ -1,13 +1,18 @@
+import { AccountService } from 'src/app/_services/account.service';
+import { PresenceService } from './../../_services/presence.service';
 import { element } from 'protractor';
 import { Message } from './../../_models/message';
 import { MessageService } from './../../_services/message.service';
 import { MembersService } from './../../_services/members.service';
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, Params } from '@angular/router';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { Member } from 'src/app/_models/member';
 import { NgxGalleryAnimation, NgxGalleryImage, NgxGalleryOptions } from '@kolkov/ngx-gallery';
 import { Photo } from 'src/app/_models/photo';
 import { TabDirective, TabsetComponent } from 'ngx-bootstrap/tabs';
+import { Observable } from 'rxjs';
+import { map, take } from 'rxjs/operators';
+import { User } from 'src/app/_models/user';
 
 
 @Component({
@@ -15,18 +20,34 @@ import { TabDirective, TabsetComponent } from 'ngx-bootstrap/tabs';
   templateUrl: './member-detail.component.html',
   styleUrls: ['./member-detail.component.css']
 })
-export class MemberDetailComponent implements OnInit {
+export class MemberDetailComponent implements OnInit, OnDestroy {
   @ViewChild("memberTabs", {static: true}) memberTabs: TabsetComponent;
   public activeTab: TabDirective;
   public member: Member;
+  public user: User;
   public messages: Message[] = [];
   public galleryOptions: NgxGalleryOptions[];
   public galleryImages: NgxGalleryImage[]=[];
+  public onlineUser$: Observable<boolean>;
 
   constructor(
-    private memberService: MembersService, 
+    private presenceService: PresenceService, 
+    private accountService: AccountService,
     private route: ActivatedRoute,
-    private messageService: MessageService) { 
+    private router: Router,
+    private messageService: MessageService) 
+  { 
+    this.accountService.currentUser$
+      .pipe(take(1))
+      .subscribe((user)=>this.user=user);
+
+    this.router.routeReuseStrategy.shouldReuseRoute =  () => false; 
+    
+    this.onlineUser$ = this.presenceService.onlineUsers$.pipe(
+      map( users => {
+        return users.includes(this.member.username);
+      })
+    )      
   }
 
   ngOnInit(): void {
@@ -75,20 +96,30 @@ export class MemberDetailComponent implements OnInit {
 
   public onTabActivated(data: TabDirective) {
     this.activeTab = data;
-    console.log(this.activeTab.heading)
-    if(this.activeTab.heading === "Messages" && this.messages.length === 0) {
-      this.loadMessageThread();
+    //console.log(this.activeTab.heading)
+    if( this.activeTab.heading === "Messages" && this.messages.length === 0) {
+      this.messageService.createHubConnection( this.user, this.member.username);
+      // this.messageService.messageThread$.subscribe((messages) => {
+      //   this.messages = messages;
+      // });
+      //this.loadMessageThread();
+    } else {
+      this.messageService.stopHubConnection();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.messageService.stopHubConnection();
   }
 
   public selectTab(tabId: number) {
     this.memberTabs.tabs[tabId].active = true;
   }
 
-  private loadMessageThread() {
-    console.log("Loading Message Thread...");
-    this.messageService.getMessageThread(this.member.username).subscribe((response)=>{
-      this.messages = response;
-    });
-  }  
+  // private loadMessageThread() {
+  //   console.log("Loading Message Thread...");
+  //   this.messageService.getMessageThread(this.member.username).subscribe((response)=>{
+  //     this.messages = response;
+  //   });
+  // }  
 }

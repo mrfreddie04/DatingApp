@@ -8,7 +8,7 @@ namespace API.Entities
         //message specific properties
         public string Content { get; set; }
         public DateTime? DateRead { get; set; }
-        public DateTime DateSent { get; set; } = DateTime.Now;
+        public DateTime DateSent { get; set; } = DateTime.UtcNow;
         public bool SenderDeleted { get; set; }
         public bool RecipientDeleted { get; set; }
 

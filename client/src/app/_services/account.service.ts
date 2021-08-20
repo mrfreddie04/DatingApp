@@ -1,3 +1,4 @@
+import { PresenceService } from './presence.service';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ReplaySubject } from 'rxjs';
@@ -14,7 +15,8 @@ export class AccountService {
   public currentUser$  = this.currentUserSource.asObservable();
 
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
+    private presenceService: PresenceService
   ) { }
 
   public login(model: any) {
@@ -43,23 +45,36 @@ export class AccountService {
   }  
 
   public logout() {
-    localStorage.removeItem("user"); 
-    this.currentUserSource.next(null);
+    this.setCurrentUser(null);
+    // localStorage.removeItem("user"); 
+    // this.currentUserSource.next(null);
   }
 
   public setCurrentUser(user: User): void {
+
     //extract roles from the token
-    user.roles = [];
-    const roles = this.getDecodedTokenPayload(user.token).role;
-    if(roles) {
-      if(typeof roles === "string")
-        user.roles.push(roles);
-      else if(Array.isArray(roles))  
-        user.roles = roles;
+    if(user) {
+      user.roles = [];
+      const roles = this.getDecodedTokenPayload(user.token).role;
+      if(roles) {
+        if(typeof roles === "string")
+          user.roles.push(roles);
+        else if(Array.isArray(roles))  
+          user.roles = roles;
+      }
     }
 
-    localStorage.setItem("user", JSON.stringify(user));    
+    //push new user to the observable pipe
     this.currentUserSource.next(user);
+
+    //save in the local storage & open/close hub connection
+    if(user) {
+      localStorage.setItem("user", JSON.stringify(user));   
+      this.presenceService.createHubConnection(user);
+    } else {
+      localStorage.removeItem("user");   
+      this.presenceService.stopHubConnection();
+    }
   }
 
   public getDecodedTokenPayload(token: string) {

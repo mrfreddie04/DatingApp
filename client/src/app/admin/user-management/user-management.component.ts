@@ -49,10 +49,6 @@ export class UserManagementComponent implements OnInit {
     })
   }
 
-  public updateUserRoles(username: string, roles: Role[]) {
-    const rolesList = roles.map( role => role.name).join(",");
-  }
-
   private getRolesArray(user: Partial<User>) {
     const roles: Role[] =[];
     const availableRoles: Role[] = [
