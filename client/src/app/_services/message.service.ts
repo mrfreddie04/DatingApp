@@ -1,3 +1,4 @@
+import { BusyService } from './busy.service';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from './../../environments/environment';
@@ -19,10 +20,11 @@ export class MessageService {
   private messageThreadSource = new BehaviorSubject<Message[]>([]);
   public messageThread$ = this.messageThreadSource.asObservable();
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private busyService: BusyService) { }
 
   public createHubConnection(user: User, otherUsername: string) {
     //console.log("CHB",user,otherUsername);
+    this.busyService.busy();
     this.hubConnection = new HubConnectionBuilder()
     .withUrl(`${this.hubUrl}message?user=${otherUsername}`, {
       accessTokenFactory: () => user.token
@@ -32,7 +34,8 @@ export class MessageService {
 
     this.hubConnection
       .start()
-      .catch( error => console.error(error));
+      .catch( error => console.error(error))
+      .finally(() => this.busyService.idle());
 
     this.hubConnection.on("ReceiveMessageThread",(messages: Message[])=>{
       this.messageThreadSource.next(messages);
@@ -60,6 +63,7 @@ export class MessageService {
 
   public stopHubConnection() {
     if(this.hubConnection) {
+      this.messageThreadSource.next([]);
       this.hubConnection  
       .stop()
       .catch( error => console.error(error));

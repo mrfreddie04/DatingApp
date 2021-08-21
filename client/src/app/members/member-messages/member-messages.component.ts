@@ -15,6 +15,7 @@ export class MemberMessagesComponent implements OnInit {
   @Input() username: string;
   public messages: Message[] = [];
   public messageContent: string;
+  public loading: boolean = false;
 
   constructor(public messageService: MessageService) { 
     this.messageService.messageThread$.subscribe( (messages) => {
@@ -27,11 +28,12 @@ export class MemberMessagesComponent implements OnInit {
   }
 
   public sendMessage(){
+    this.loading = true;
     this.messageService.sendMessage(this.username, this.messageContent)
       .then(()=>{
         console.log("SendMessage completed");
-        this.messageForm.reset();
-      })
+        this.messageForm.reset();})
+      .finally(() => this.loading = false);
     
     //   .subscribe((message)=>{
     //   this.messages.push(message);
