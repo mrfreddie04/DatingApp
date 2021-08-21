@@ -13,14 +13,14 @@ export class MemberMessagesComponent implements OnInit {
   @ViewChild("messageForm") messageForm: NgForm;
   //@Input() messages: Message[] = [];
   @Input() username: string;
-  public messages: Message[] = [];
+  //public messages: Message[] = [];
   public messageContent: string;
   public loading: boolean = false;
 
   constructor(public messageService: MessageService) { 
-    this.messageService.messageThread$.subscribe( (messages) => {
-      this.messages = messages;
-    })    
+    // this.messageService.messageThread$.subscribe( (messages) => {
+    //   this.messages = messages;
+    // })    
   }
 
   ngOnInit(): void {
