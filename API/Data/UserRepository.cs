@@ -31,6 +31,14 @@ namespace API.Data
         .SingleOrDefaultAsync();
     }
 
+     public async Task<string> GetUserGenderAsync(string username) 
+     {
+       return await _context.Users
+        .Where( user => user.UserName == username)
+        .Select( user => user.Gender)
+        .SingleOrDefaultAsync();
+     }
+
     public async Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams)
     {
       var query = _context.Users.AsQueryable();
@@ -78,15 +86,6 @@ namespace API.Data
       return await _context.Users
         .Include(u => u.Photos)
         .ToListAsync();
-    }
-
-    public async Task<bool> SaveAllAsync()
-    { 
-      if( _context.ChangeTracker.HasChanges())  {
-        var updates = await _context.SaveChangesAsync();
-        return (updates > 0);
-      }
-      return false;
     }
 
     public void Update(AppUser user)

@@ -77,6 +77,7 @@ namespace API.Data
     {
         //build query
         var query = _context.Messages
+            .ProjectTo<MessageDto>(_mapper.ConfigurationProvider)
             .OrderByDescending( m => m.DateSent)
             .AsQueryable();
 
@@ -89,7 +90,7 @@ namespace API.Data
 
         //create PagedList
         return await PagedList<MessageDto>.CreateAsync(
-            query.ProjectTo<MessageDto>(_mapper.ConfigurationProvider).AsNoTracking(), 
+            query.AsNoTracking(), 
             messageParams.PageNumber,
             messageParams.PageSize
         );      
@@ -99,16 +100,17 @@ namespace API.Data
     {
         //get all messages in-memory
         var messages = await _context.Messages
-            .Include( m => m.Sender).ThenInclude( au => au.Photos )
-            .Include( m => m.Recipient).ThenInclude( au => au.Photos )
+            // .Include( m => m.Sender).ThenInclude( au => au.Photos )
+            // .Include( m => m.Recipient).ThenInclude( au => au.Photos )
             .Where( m => 
                 m.Sender.UserName == currentUserName && !m.SenderDeleted && m.Recipient.UserName == recipientName ||
                 m.Sender.UserName == recipientName && !m.RecipientDeleted && m.Recipient.UserName == currentUserName)
             .OrderBy( m => m.DateSent)    
+            .ProjectTo<MessageDto>(_mapper.ConfigurationProvider)
             .ToListAsync();
 
         var unreadMessages = messages
-            .Where( m => m.Recipient.UserName == currentUserName && m.DateRead == null)
+            .Where( m => m.RecipientUsername == currentUserName && m.DateRead == null)
             .ToList();
 
         //update unread
@@ -118,21 +120,9 @@ namespace API.Data
             {
                 message.DateRead = DateTime.UtcNow; 
             }
-
-            await _context.SaveChangesAsync();
         }
 
-        //map 
-        return _mapper.Map<IEnumerable<MessageDto>>(messages);
-    }
-
-    public async Task<bool> SaveAllAsync()
-    {
-      if(_context.ChangeTracker.HasChanges()) {
-        var updates = await _context.SaveChangesAsync();
-        return (updates>0);
-      }
-      return false;
+        return messages;
     }
   }
 }

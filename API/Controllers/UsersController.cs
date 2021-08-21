@@ -19,13 +19,13 @@ namespace API.Controllers
   [Authorize]
   public class UsersController : BaseApiController
   {
-    private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IPhotoService _photoService;
 
-    public UsersController(IUserRepository userRepository, IMapper mapper, IPhotoService photoService)
+    public UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService photoService)
     {
-      _userRepository = userRepository;
+      _unitOfWork = unitOfWork;
       _mapper = mapper;
       _photoService = photoService;
     }
@@ -33,14 +33,14 @@ namespace API.Controllers
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery] UserParams userParams) {
         
-        var user = await _userRepository.GetUserByUserNameAsync(User.GetUserName());
-        userParams.CurrentUserName = user.UserName;
+        var gender = await _unitOfWork.UserRepository.GetUserGenderAsync(User.GetUserName());
+        userParams.CurrentUserName = User.GetUserName();
 
         if(string.IsNullOrEmpty(userParams.Gender))
-          userParams.Gender = user.Gender == "male" ? "female" : "male";
+          userParams.Gender = gender == "male" ? "female" : "male";
 
         // get PagedList<MemberDto>
-        var users = await _userRepository.GetMembersAsync(userParams);   
+        var users = await _unitOfWork.UserRepository.GetMembersAsync(userParams);   
 
         // retrieve paging inro from PagedList and use it to add Pagination Header
         Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
@@ -52,9 +52,9 @@ namespace API.Controllers
 
     [HttpGet("{username}", Name = "GetUser")]
     public async Task<ActionResult<MemberDto>> GetUser(string username) {
-        // var user = await _userRepository.GetUserByUserNameAsync(username);
+        // var user = await _unitOfWork.UserRepository.GetUserByUserNameAsync(username);
         // var userToReturn = _mapper.Map<MemberDto>(user);
-        var user = await _userRepository.GetMemberAsync(username);
+        var user = await _unitOfWork.UserRepository.GetMemberAsync(username);
         return user;
         // if(user != null) {
         //   var userToReturn = _mapper.Map<MemberDto>(user);
@@ -62,23 +62,23 @@ namespace API.Controllers
         // }
         // //   return Ok(user); 
         // return NotFound();
-        //return await _userRepository.GetUserByUserNameAsync(username);
+        //return await _unitOfWork.UserRepository.GetUserByUserNameAsync(username);
     }    
 
     [HttpPut]
     public async Task<ActionResult> UpdateUser(MemberUpdateDto memberUpdateDto) {
         //get username from the token (User claim principal is available in the parent class - ControllerBase)
         //get user entity from the DB
-        var user = await _userRepository.GetUserByUserNameAsync(User.GetUserName());
+        var user = await _unitOfWork.UserRepository.GetUserByUserNameAsync(User.GetUserName());
 
         //use mapper to update the user
         _mapper.Map(memberUpdateDto, user);
 
         //add tracking info to the db context - change status of the user object to EntityState.Modified
-        _userRepository.Update(user);
+        _unitOfWork.UserRepository.Update(user);
 
         //save changes to the db
-        if(await _userRepository.SaveAllAsync())
+        if(await _unitOfWork.CompleteAsync())
           return NoContent();
 
         return BadRequest("Failed to update user");
@@ -87,7 +87,7 @@ namespace API.Controllers
     [HttpPost("add-photo")]
     public async Task<ActionResult<PhotoDto>> AddPhoto(IFormFile file) {
       //get user - we are eagerly loading photos
-      var user = await _userRepository.GetUserByUserNameAsync(User.GetUserName());
+      var user = await _unitOfWork.UserRepository.GetUserByUserNameAsync(User.GetUserName());
 
       //upload to cloudinary
       var results = await _photoService.AddPhotoAsync(file);
@@ -110,10 +110,10 @@ namespace API.Controllers
       user.Photos.Add(photo);
 
       //update user record
-      _userRepository.Update(user);
+      _unitOfWork.UserRepository.Update(user);
 
         //save changes to the db
-      if(await _userRepository.SaveAllAsync()) {
+      if(await _unitOfWork.CompleteAsync()) {
         return CreatedAtRoute("GetUser",new {username=user.UserName},_mapper.Map<PhotoDto>(photo)); 
         //return _mapper.Map<PhotoDto>(photo);    
       }
@@ -123,7 +123,7 @@ namespace API.Controllers
 
     [HttpPut("set-main-photo/{photoId}")]
     public async Task<ActionResult> SetMainPhoto(int photoId) {
-      var user = await _userRepository.GetUserByUserNameAsync(User.GetUserName());
+      var user = await _unitOfWork.UserRepository.GetUserByUserNameAsync(User.GetUserName());
 
       var photo = user.Photos.FirstOrDefault((photo)=>photo.Id == photoId);
       if(photo == null) 
@@ -138,10 +138,10 @@ namespace API.Controllers
       photo.IsMain = true;  
 
       //update user record
-      _userRepository.Update(user);
+      _unitOfWork.UserRepository.Update(user);
 
         //save changes to the db
-      if(await _userRepository.SaveAllAsync()) {
+      if(await _unitOfWork.CompleteAsync()) {
         return NoContent();
       }      
 
@@ -150,7 +150,7 @@ namespace API.Controllers
 
     [HttpDelete("delete-photo/{photoId}")]
     public async Task<ActionResult> DeletePhoto(int photoId) {
-      var user = await _userRepository.GetUserByUserNameAsync(User.GetUserName());
+      var user = await _unitOfWork.UserRepository.GetUserByUserNameAsync(User.GetUserName());
 
       var photo = user.Photos.FirstOrDefault((photo)=>photo.Id == photoId);
 
@@ -168,10 +168,10 @@ namespace API.Controllers
 
       user.Photos.Remove(photo);
 
-      _userRepository.Update(user);
+      _unitOfWork.UserRepository.Update(user);
 
         //save changes to the db
-      if(await _userRepository.SaveAllAsync()) {
+      if(await _unitOfWork.CompleteAsync()) {
         return Ok();
       }       
 

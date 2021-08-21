@@ -74,9 +74,9 @@ export class MessageService {
     return PaginationHelper.getPaginatedResults<Message[]>(`${this.baseUrl}messages` ,params, this.http);
   }
 
-  public getMessageThread(username: string) {
-    return this.http.get<Message[]>(`${this.baseUrl}messages/thread/${username}`);
-  }
+  // public getMessageThread(username: string) {
+  //   return this.http.get<Message[]>(`${this.baseUrl}messages/thread/${username}`);
+  // }
 
   public async sendMessage(username: string, content: string) {
     const createMessage = {

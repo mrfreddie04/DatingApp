@@ -18,12 +18,12 @@ namespace API.Helpers
         //get user name from Claim Principal
         var userid = resultContext.HttpContext.User.GetUserId();
         //get repo from DI container
-        var repo = resultContext.HttpContext.RequestServices.GetService<IUserRepository>();
+        var uow = resultContext.HttpContext.RequestServices.GetService<IUnitOfWork>();
 
-        var user = await repo.GetUserByIdAsync(userid);
-        user.LastActive = DateTime.Now;
-        repo.Update(user);
-        await repo.SaveAllAsync();
+        var user = await uow.UserRepository.GetUserByIdAsync(userid);
+        user.LastActive = DateTime.UtcNow;
+        //uow.UserRepository.Update(user);
+        await uow.CompleteAsync();
     }
   }
 }

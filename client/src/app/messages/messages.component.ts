@@ -1,3 +1,5 @@
+import { filter, switchMap } from 'rxjs/operators';
+import { ConfirmService } from './../_services/confirm.service';
 import { MessageService } from './../_services/message.service';
 import { Component, OnInit } from '@angular/core';
 import { Message } from '../_models/message';
@@ -16,7 +18,7 @@ export class MessagesComponent implements OnInit {
   public pageNumber: number = 1; 
   public loading: boolean = false;
 
-  constructor(private messageService: MessageService) { }
+  constructor(private messageService: MessageService, private confirmService: ConfirmService) { }
 
   ngOnInit(): void {
     this.loadMessages();
@@ -43,10 +45,29 @@ export class MessagesComponent implements OnInit {
   }
 
   public deleteMessage(id: number) {
-    this.messageService.deleteMessage(id).subscribe(()=>{
-      const messageIdx = this.messages.findIndex(m => m.id === id);
-      if(messageIdx>0)
-        this.messages.splice(messageIdx,1);
-    })
+    this.confirmService.confirm("Confirm delete message","His cannot be undone")
+      .pipe(
+        filter((result)=>result),
+        switchMap((result)=>{
+          console.log("Will delete!")
+          return this.messageService.deleteMessage(id);
+        })
+      )
+      .subscribe(()=>{
+          console.log("deleting!")
+          const messageIdx = this.messages.findIndex(m => m.id === id);
+          if(messageIdx>0) this.messages.splice(messageIdx,1);
+      });
+
+      // this.confirmService.confirm("Confirm delete message","His cannot be undone")
+      // .subscribe((result: boolean)=>{
+      //   if(result) {
+      //     this.messageService.deleteMessage(id).subscribe(()=>{
+      //       const messageIdx = this.messages.findIndex(m => m.id === id);
+      //       if(messageIdx>0) this.messages.splice(messageIdx,1);
+      //     })
+      //   }
+      // });      
+
   }
 }
